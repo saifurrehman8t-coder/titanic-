@@ -9,19 +9,20 @@ import { TitanicQuiz } from './components/TitanicQuiz';
 import { Footer } from './components/Footer';
 import { AdSlot } from './components/AdSlot';
 import { SeoInspectorModal } from './components/SeoInspectorModal';
-import { Compass, Sparkles, Filter, Bookmark, Flame, ArrowUpRight, Anchor, RefreshCw } from 'lucide-react';
+import { Compass, Sparkles, Filter, Bookmark, ArrowUpRight, Anchor, RefreshCw, Layers, Grid, ListFilter } from 'lucide-react';
 
-const CATEGORIES: Category[] = [
-  'Construction & Shipyard',
-  'First-Class Luxury',
-  'Steerage & Immigrants',
-  'Key Figures & Crew',
-  'Maiden Voyage',
-  'Sinking Chronology',
-  'Heroism & Tragedy',
-  'Rescue & Inquiries',
-  'Wreck Exploration',
-  'Myths & Pop Culture'
+const CATEGORIES_WITH_ICONS: Array<{ name: Category | 'All'; icon: string }> = [
+  { name: 'All', icon: '📜' },
+  { name: 'Construction & Shipyard', icon: '🏗️' },
+  { name: 'First-Class Luxury', icon: '👑' },
+  { name: 'Steerage & Immigrants', icon: '🧳' },
+  { name: 'Key Figures & Crew', icon: '👨‍✈️' },
+  { name: 'Maiden Voyage', icon: '🚢' },
+  { name: 'Sinking Chronology', icon: '⏱️' },
+  { name: 'Heroism & Tragedy', icon: '🕊️' },
+  { name: 'Rescue & Inquiries', icon: '⚓' },
+  { name: 'Wreck Exploration', icon: '🌊' },
+  { name: 'Myths & Pop Culture', icon: '🔮' }
 ];
 
 export function App() {
@@ -91,15 +92,18 @@ export function App() {
   // Bookmarked posts
   const bookmarkedPosts = BLOG_POSTS.filter(post => bookmarkedIds.includes(post.id));
 
-  // Featured post for Hero Header
-  const featuredPost = BLOG_POSTS.find(p => p.featured) || BLOG_POSTS[0];
+  // Featured post for Hero Header (Use custom generated image)
+  const featuredPost = {
+    ...BLOG_POSTS[0],
+    featuredImage: '/hero-titanic.jpg'
+  };
 
   return (
     <div className="min-h-screen flex flex-col justify-between">
       <div>
         {/* Navigation Bar */}
         <Navbar
-          categories={CATEGORIES}
+          categories={CATEGORIES_WITH_ICONS.filter(c => c.name !== 'All').map(c => c.name as Category)}
           selectedCategory={selectedCategory}
           onSelectCategory={(cat) => { setSelectedCategory(cat); setSelectedPost(null); }}
           searchQuery={searchQuery}
@@ -134,10 +138,10 @@ export function App() {
             {activeTab === 'blogs' && (
               <main className="container py-8 space-y-10 animate-fade-in text-left">
                 
-                {/* Hero Header Banner */}
+                {/* Stunning Cinematic Hero Banner */}
                 {selectedCategory === 'All' && !searchQuery && (
                   <section className="space-y-8">
-                    <div className="glass-panel p-6 md:p-10 rounded-2xl border border-amber-500/30 relative overflow-hidden bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950">
+                    <div className="glass-panel p-6 md:p-10 rounded-2xl border border-amber-500/40 relative overflow-hidden bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 shadow-2xl">
                       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
                         
                         <div className="lg:col-span-7 space-y-4">
@@ -159,9 +163,9 @@ export function App() {
                           <div className="flex items-center gap-4 pt-2">
                             <button
                               onClick={() => setSelectedPost(featuredPost)}
-                              className="btn btn-primary text-xs py-2.5 px-5 flex items-center gap-1.5"
+                              className="btn btn-primary text-xs py-2.5 px-6 flex items-center gap-1.5 shadow-xl"
                             >
-                              Read Full Archive <ArrowUpRight size={14} />
+                              Explore Archive <ArrowUpRight size={14} />
                             </button>
                             <span className="text-xs text-amber-300/80 font-mono">
                               By {featuredPost.author.name}
@@ -169,7 +173,8 @@ export function App() {
                           </div>
                         </div>
 
-                        <div className="lg:col-span-5 h-64 md:h-72 rounded-xl overflow-hidden border border-amber-500/30 shadow-2xl relative group">
+                        {/* Generated Hero Cover Image */}
+                        <div className="lg:col-span-5 h-64 md:h-80 rounded-xl overflow-hidden border-2 border-amber-500/40 shadow-2xl relative group">
                           <img 
                             src={featuredPost.featuredImage} 
                             alt={featuredPost.title}
@@ -186,45 +191,57 @@ export function App() {
                   </section>
                 )}
 
-                {/* Category Filter & Sorting Bar */}
+                {/* Interactive Blog Category Tabs */}
                 <section className="space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-800 pb-4">
-                    
-                    {/* Category Scroll Pills */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none max-w-full">
-                      <button
-                        onClick={() => setSelectedCategory('All')}
-                        className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                          selectedCategory === 'All'
-                            ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
-                            : 'bg-slate-900 text-gray-300 hover:text-amber-300 border border-gray-800'
-                        }`}
-                      >
-                        All Categories ({BLOG_POSTS.length})
-                      </button>
+                  <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
+                    <h3 className="text-base font-bold text-gray-100 flex items-center gap-2 font-mono">
+                      <Layers size={18} className="text-amber-400" /> Explore Blog Archives by Category
+                    </h3>
+                    <span className="text-xs text-amber-300 font-mono">
+                      Showing {filteredPosts.length} of {BLOG_POSTS.length} Articles
+                    </span>
+                  </div>
 
-                      {CATEGORIES.map((cat) => {
-                        const count = BLOG_POSTS.filter(p => p.category === cat).length;
-                        return (
-                          <button
-                            key={cat}
-                            onClick={() => setSelectedCategory(cat)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                              selectedCategory === cat
-                                ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
-                                : 'bg-slate-900 text-gray-300 hover:text-amber-300 border border-gray-800'
-                            }`}
-                          >
-                            {cat} ({count})
-                          </button>
-                        );
-                      })}
+                  {/* Horizontal Scrollable Category Tabs Bar */}
+                  <div className="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-thin scrollbar-thumb-amber-500/40">
+                    {CATEGORIES_WITH_ICONS.map((catItem) => {
+                      const count = catItem.name === 'All' 
+                        ? BLOG_POSTS.length 
+                        : BLOG_POSTS.filter(p => p.category === catItem.name).length;
+                      
+                      const isSelected = selectedCategory === catItem.name;
+
+                      return (
+                        <button
+                          key={catItem.name}
+                          onClick={() => setSelectedCategory(catItem.name)}
+                          className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 border ${
+                            isSelected
+                              ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold border-amber-300 shadow-lg scale-105'
+                              : 'bg-slate-900/90 text-gray-300 hover:text-amber-300 hover:bg-slate-800 border-amber-500/20'
+                          }`}
+                        >
+                          <span>{catItem.icon}</span>
+                          <span>{catItem.name}</span>
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                            isSelected ? 'bg-slate-950 text-amber-300' : 'bg-slate-800 text-gray-400'
+                          }`}>
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Sorting & Filter Header */}
+                  <div className="flex items-center justify-between text-xs pt-2">
+                    <div className="text-gray-400 font-mono">
+                      Selected Category: <strong className="text-amber-400">{selectedCategory}</strong>
                     </div>
 
-                    {/* Sort Selector */}
-                    <div className="flex items-center gap-2 text-xs">
+                    <div className="flex items-center gap-2">
                       <span className="text-gray-400 flex items-center gap-1 font-mono">
-                        <Filter size={12} className="text-amber-400" /> Sort:
+                        <Filter size={12} className="text-amber-400" /> Sort By:
                       </span>
                       <select
                         value={sortBy}
@@ -236,11 +253,10 @@ export function App() {
                         <option value="readTime">Longest Read</option>
                       </select>
                     </div>
-
                   </div>
                 </section>
 
-                {/* Article Grid with In-Feed Ad Placements */}
+                {/* Article Cards Grid with Native In-Feed AdSense Slots */}
                 <section className="space-y-6">
                   {filteredPosts.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -253,7 +269,7 @@ export function App() {
                             onToggleBookmark={toggleBookmark}
                           />
 
-                          {/* Inject Native AdSense Unit every 6 cards for high revenue */}
+                          {/* Inject Native AdSense Unit every 6 cards */}
                           {adMode && (index + 1) % 6 === 0 && (
                             <AdSlot type="native-feed" slotId={`native-${index}`} adMode={adMode} />
                           )}
@@ -317,7 +333,7 @@ export function App() {
 
       {/* Footer */}
       <Footer 
-        categories={CATEGORIES}
+        categories={CATEGORIES_WITH_ICONS.filter(c => c.name !== 'All').map(c => c.name as Category)}
         onSelectCategory={(cat) => { setSelectedCategory(cat); setSelectedPost(null); }}
         setActiveTab={(tab) => { setActiveTab(tab); setSelectedPost(null); }}
       />
